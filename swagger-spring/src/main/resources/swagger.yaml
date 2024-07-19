@@ -1,0 +1,202 @@
+openapi: 3.0.3
+info:
+  title: springswaggerteste
+  version: 1.0.0
+paths:
+  /ping:
+    get:
+      tags:
+        - example
+      summary: Simple ping-pong api
+      operationId: ping
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Pong'
+  /transfer:
+    post:
+      tags:
+        - Transfer
+      summary: Cria uma nova transferencia do tipo ACH, Wire ou interna
+      parameters:
+        - name: x-gbip-request-id
+          in: header
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/product'
+      responses:
+        200:
+          description: Transferencia criada com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GbipTransaction'
+        '201':
+          description: Transferencia criada com sucesso
+        '202':
+          description: Transferencia em fila de processamento.
+        '400':
+          description: Requisição inválida
+components:
+  schemas:
+    product:
+      type: object
+      properties:
+        required:
+          oneOf:
+            - $ref: '#/components/schemas/ach'
+            - $ref: '#/components/schemas/wire'
+    Pong:
+      properties:
+        message:
+          type: string
+          example: 'Hello World!'
+        when:
+          type: string
+          format: date-time
+    ach:
+      type: object
+      required:
+        - orderType
+        - originSource
+        - counterPartyName
+        - bankName
+        - routingNumber
+      properties:
+        orderType:
+          type: string
+          enum: ['OUT', 'LOAD']
+          description: transfer type
+        originSource:
+          type: number
+          format: integer
+        counterPartyName:
+          type: string
+          description: Name of the counterparty
+        bankName:
+          type: string
+          description: Name of the recipient bank
+        routingNumber:
+          type: string
+          description: ABA Routing Transit Number
+        sameDay:
+          type: boolean
+          default: false
+        address:
+          oneOf:
+            - $ref: '#/components/schemas/address'
+    wire:
+      type: object
+      required:
+        - originSource
+        - clientName
+        - counterPartyName
+        - bankName
+        - routingNumber
+      properties:
+        originSource:
+          type: number
+          format: integer
+        clientName:
+          type: string
+        counterPartyName:
+          type: string
+        routingNumber:
+          type: string
+          description: ABA Routing Transit Number
+        address:
+          oneOf:
+            - $ref: '#/components/schemas/address'
+    address:
+      type: object
+      required:
+        - street
+        - city
+        - state
+        - zipCode
+      properties:
+        street:
+          type: string
+          description: Recipient's street name
+        city:
+          type: string
+          description: Name of the recipient's city
+        state:
+          type: string
+          description: Name of the recipient's state
+        zipCode:
+          type: string
+          description: Postal Code
+    TransferResponse:
+      properties:
+        transactionId:
+          type: string
+        x-gbip-request-id:
+          type: string
+        status:
+          type:
+            string
+        raw-response-payload:
+          type:
+            string
+        _links:
+          type: object
+          properties:
+            self:
+              type: object
+              properties:
+                href:
+                  type: string
+    GbipTransaction:
+      properties:
+        description:
+          type: string
+        model:
+          type: object
+          properties:
+            requestId:
+              type: string
+            status:
+              type:
+                string
+            ingressTimeStamp:
+              type:
+                string
+            clientId:
+              type:
+                string
+            integrationResponseFeedback:
+              type:
+                string
+            responsePayload:
+              type:
+                string
+            processingPhase:
+              type:
+                string
+            externalSystemId:
+              type:
+                string
+            responseTimeStamp:
+              type:
+                string
+            latestResponseTimeStamp:
+              type:
+                string
+            _links:
+              type: object
+              properties:
+                self:
+                  type: object
+                  properties:
+                    href:
+                      type: string
